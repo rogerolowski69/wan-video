@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { formatDate, getRun, getScripts, scriptLabel, type Run } from "../api";
+import { formatDate, getCatalog, getRun, scriptLabel, type Run } from "../api";
 import { MediaTile } from "../components/MediaTile";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -15,10 +15,10 @@ export function RunDetailPage(): React.JSX.Element {
     let cancelled = false;
     async function load(): Promise<void> {
       try {
-        const [runData, scriptsData] = await Promise.all([getRun(Number(id)), getScripts()]);
+        const [runData, catalogData] = await Promise.all([getRun(Number(id)), getCatalog()]);
         if (!cancelled) {
           setRun(runData);
-          setLabels(scriptsData.labels);
+          setLabels(catalogData.labels);
           setError(null);
         }
       } catch (err) {
@@ -117,7 +117,7 @@ export function RunDetailPage(): React.JSX.Element {
 
 function BackLink(): React.JSX.Element {
   return (
-    <Link to="/" className="text-sm text-zinc-400 hover:text-zinc-200">
+    <Link to="/runs" className="text-sm text-zinc-400 hover:text-zinc-200">
       ← All runs
     </Link>
   );

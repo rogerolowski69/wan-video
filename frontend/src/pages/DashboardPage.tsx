@@ -1,5 +1,6 @@
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getHealth, getRuns, getScripts, type Run } from "../api";
+import { getCatalog, getHealth, getRuns, type Run } from "../api";
 import { RunCard } from "../components/RunCard";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -15,14 +16,14 @@ export function DashboardPage(): React.JSX.Element {
     let cancelled = false;
     async function load(): Promise<void> {
       try {
-        const [runsData, scriptsData, healthData] = await Promise.all([
+        const [runsData, catalogData, healthData] = await Promise.all([
           getRuns(50),
-          getScripts(),
+          getCatalog(),
           getHealth(),
         ]);
         if (cancelled) return;
         setRuns(runsData);
-        setLabels(scriptsData.labels);
+        setLabels(catalogData.labels);
         setHealth(healthData.status);
         setStorage(healthData.storage);
         setError(null);
@@ -47,7 +48,10 @@ export function DashboardPage(): React.JSX.Element {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Generation runs</h1>
+          <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-2 inline-block">
+            ← Studio
+          </Link>
+          <h1 className="text-2xl font-semibold tracking-tight">Run history</h1>
           <p className="text-zinc-400 text-sm mt-1">History from fal.ai and Hugging Face inference</p>
         </div>
         <div className="flex gap-3 text-sm">
@@ -78,8 +82,8 @@ export function DashboardPage(): React.JSX.Element {
         <p className="text-zinc-500 text-sm">Loading runs…</p>
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-dashed border-white/15 p-12 text-center text-zinc-500">
-          No runs yet. Execute a script with <code className="text-indigo-300">just demo-flux</code> or{" "}
-          <code className="text-indigo-300">just run-all</code>.
+          No runs yet. Open the <Link to="/" className="text-indigo-300 hover:underline">Studio</Link> to
+          launch a model.
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

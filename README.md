@@ -14,9 +14,23 @@ just runs-status    # latest status per script
 
 Copy `.env.example` to `.env` and set `HF_TOKEN` and `FAL_KEY`.
 
-## Scripts
+## Generation Studio
 
-Generation CLIs live under `scripts/` by modality:
+**Web UI** (http://localhost:3000 with Docker, or `just serve` + `npm run dev` in `frontend/`):
+- **Studio** — central menu to launch any model with one click (demo mode)
+- **Runs** — full history
+- **Gallery** — all outputs from MinIO
+
+**CLI menu** (terminal):
+
+```powershell
+just menu
+# or: uv run python menu.py
+```
+
+Pick a model by number, choose demo or interactive prompts, or run the full batch.
+
+### Scripts
 
 ```
 scripts/

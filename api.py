@@ -1,4 +1,4 @@
-"""Railway / Docker web entrypoint — health, runs, artifacts, and UI API."""
+"""Railway / Docker web entrypoint — health, runs, artifacts, generation jobs, and UI API."""
 
 from __future__ import annotations
 
@@ -9,14 +9,15 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from db.models import GenerationRun, OutputArtifact
 from db.session import get_session
 from env_utils import load_env_file
-from scripts_config import GENERATION_SCRIPTS as SCRIPTS, SCRIPTS_BY_MODALITY
+from job_runner import get_job, job_to_dict, list_jobs, start_model_job, start_run_all
+from scripts_config import catalog_payload, get_model
 from storage import artifact_public_url, ensure_bucket, fetch_object, is_minio_enabled, read_local_artifact
 
 load_env_file()
@@ -30,7 +31,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="wan-video",
-    version="0.2.0",
+    version="0.3.0",
     description="fal.ai + Hugging Face inference — image, video, 3D, and voice generation",
     lifespan=lifespan,
 )
@@ -42,6 +43,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class GenerateRequest(BaseModel):
+    demo: bool = True
+    provider: str | None = Field(default=None, description="HF Inference provider (Wan only)")
+
+
+class RunAllRequest(BaseModel):
+    continue_on_error: bool = True
 
 
 def _artifact_payload(artifact: OutputArtifact) -> dict[str, Any]:
@@ -69,6 +79,18 @@ def _run_payload(run: GenerationRun) -> dict[str, Any]:
     }
 
 
+@app.get("/")
+def root() -> dict[str, object]:
+    return {
+        "service": "wan-video",
+        "studio": "/catalog",
+        "health": "/health",
+        "runs": "/runs",
+        "gallery": "/gallery",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health() -> Response:
     missing = [name for name in ("HF_TOKEN", "FAL_KEY") if not os.environ.get(name)]
@@ -82,23 +104,40 @@ def health() -> Response:
     return Response(content=json.dumps(body), media_type="application/json", status_code=status)
 
 
+@app.get("/catalog")
 @app.get("/scripts")
 def list_scripts() -> dict[str, object]:
-    labels = {
-        "scripts/image/flux.py": "FLUX Dev",
-        "scripts/image/nano_banana.py": "Nano Banana 2",
-        "scripts/image/ideogram_character.py": "Ideogram Character",
-        "scripts/video/seedance.py": "Seedance 2.0",
-        "scripts/video/wan.py": "Wan 2.2 T2V",
-        "scripts/voice/kling.py": "Kling Voice",
-        "scripts/model_3d/trellis2.py": "Trellis 2",
-        "scripts/model_3d/hunyuan.py": "Hunyuan 3D",
-    }
-    return {
-        "scripts": list(SCRIPTS),
-        "by_modality": {k: list(v) for k, v in SCRIPTS_BY_MODALITY.items()},
-        "labels": labels,
-    }
+    return catalog_payload()
+
+
+@app.post("/generate/{model_id}")
+def generate_model(model_id: str, body: GenerateRequest) -> dict[str, object]:
+    if get_model(model_id) is None:
+        raise HTTPException(status_code=404, detail=f"Unknown model: {model_id}")
+    try:
+        job = start_model_job(model_id, demo=body.demo, provider=body.provider)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return job_to_dict(job)
+
+
+@app.post("/generate/run-all")
+def generate_run_all(body: RunAllRequest) -> dict[str, object]:
+    job = start_run_all(continue_on_error=body.continue_on_error)
+    return job_to_dict(job)
+
+
+@app.get("/jobs")
+def jobs(limit: int = 20) -> list[dict[str, object]]:
+    return [job_to_dict(j) for j in list_jobs(limit)]
+
+
+@app.get("/jobs/{job_id}")
+def job_status(job_id: str) -> dict[str, object]:
+    job = get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job_to_dict(job)
 
 
 @app.get("/runs")
@@ -138,7 +177,6 @@ def get_run(run_id: int) -> dict[str, Any]:
 
 @app.get("/gallery")
 def gallery(limit: int = 100) -> list[dict[str, Any]]:
-    """Recent media artifacts across all runs (images, video, 3D, audio)."""
     capped = min(max(limit, 1), 500)
     session = get_session()
     try:
@@ -166,7 +204,6 @@ def gallery(limit: int = 100) -> list[dict[str, Any]]:
 
 @app.get("/files/{file_path:path}")
 def get_file(file_path: str) -> Response:
-    """Stream artifact from MinIO or local output/ (local dev fallback)."""
     if is_minio_enabled():
         try:
             body, content_type = fetch_object(file_path)

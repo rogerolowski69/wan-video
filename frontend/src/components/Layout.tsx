@@ -1,9 +1,9 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 const NAV = [
-  { to: "/", label: "Runs" },
+  { to: "/", label: "Studio" },
+  { to: "/runs", label: "Runs" },
   { to: "/gallery", label: "Gallery" },
-  { to: "/scripts", label: "Scripts" },
 ] as const;
 
 export function Layout(): React.JSX.Element {
@@ -21,7 +21,10 @@ export function Layout(): React.JSX.Element {
           </Link>
           <nav className="flex gap-1">
             {NAV.map((item) => {
-              const active = location.pathname === item.to;
+              const active =
+                item.to === "/"
+                  ? location.pathname === "/"
+                  : location.pathname.startsWith(item.to);
               return (
                 <Link
                   key={item.to}

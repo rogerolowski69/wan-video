@@ -12,6 +12,12 @@ alembic := "uv run alembic"
 default:
     @just --list
 
+# Interactive CLI studio — launch any model from one menu
+menu:
+    {{python}} menu.py
+
+studio: menu
+
 # Install / sync dependencies (uv)
 sync:
     uv sync

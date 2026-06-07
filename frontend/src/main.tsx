@@ -5,7 +5,7 @@ import { Layout } from "./components/Layout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { GalleryPage } from "./pages/GalleryPage";
 import { RunDetailPage } from "./pages/RunDetailPage";
-import { ScriptsPage } from "./pages/ScriptsPage";
+import { StudioPage } from "./pages/StudioPage";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -18,9 +18,9 @@ createRoot(root).render(
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<DashboardPage />} />
+          <Route index element={<StudioPage />} />
+          <Route path="runs" element={<DashboardPage />} />
           <Route path="gallery" element={<GalleryPage />} />
-          <Route path="scripts" element={<ScriptsPage />} />
           <Route path="runs/:id" element={<RunDetailPage />} />
         </Route>
       </Routes>
