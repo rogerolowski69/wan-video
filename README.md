@@ -37,7 +37,44 @@ scripts/
 | `just seedance` | `scripts/video/seedance.py` | Seedance video |
 | `just wan` | `scripts/video/wan.py` | Wan 2.2 T2V (HF Inference) |
 
-Outputs land in `output/` with unique `-run<ID>` suffixes. Run history is stored in `data/wan_video.db`.
+Outputs land in `output/` with unique `-run<ID>` suffixes, uploaded to **MinIO** when configured. Run history is stored in Postgres (Docker) or SQLite (local).
+
+## Docker Compose (UI + MinIO + Postgres)
+
+Full stack: React frontend, FastAPI, PostgreSQL, MinIO object storage.
+
+```powershell
+copy .env.example .env   # set HF_TOKEN, FAL_KEY
+docker compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| **Web UI** | http://localhost:3000 |
+| **MinIO Console** | http://localhost:9001 (minioadmin / minioadmin) |
+| **MinIO S3 API** | http://localhost:9000 |
+
+All generation artifacts are uploaded to the `wan-video` bucket under `output/`. The UI loads media via `/api/files/...` (proxied to MinIO).
+
+Run a generation while stack is up (from host):
+
+```powershell
+just flux --demo
+```
+
+Ensure `.env` includes `MINIO_ENDPOINT=http://localhost:9000` for local CLI uploads to MinIO.
+
+### Frontend dev (hot reload)
+
+```powershell
+# Terminal 1
+just serve
+
+# Terminal 2
+cd frontend && npm install && npm run dev
+```
+
+Open http://localhost:5173 — Vite proxies `/api` to the backend.
 
 ## Deploy on Railway
 

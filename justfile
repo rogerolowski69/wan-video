@@ -132,3 +132,15 @@ setup: sync migrate
 # Start FastAPI server (Railway / local)
 serve:
     {{python}} api.py
+
+# --- Docker ---
+
+# Full stack: UI, API, Postgres, MinIO
+docker-up:
+    docker compose up --build
+
+docker-down:
+    docker compose down
+
+docker-logs:
+    docker compose logs -f

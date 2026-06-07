@@ -93,11 +93,14 @@ class GenerationRecorder:
         if self.run_id is None:
             return
 
+        from storage import persist_artifact
+
         resolved = path.resolve()
+        storage_key = persist_artifact(resolved)
         size = resolved.stat().st_size if resolved.is_file() else None
         artifact = OutputArtifact(
             run_id=self.run_id,
-            file_path=relative_project_path(path),
+            file_path=storage_key,
             file_kind=classify_file_kind(path),
             file_size_bytes=size,
         )

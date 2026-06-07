@@ -1,0 +1,77 @@
+services:
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    environment:
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-wan-video}
+    volumes:
+      - ./docker/minio-init.sh:/init.sh:ro
+    entrypoint: ["/bin/sh", "/init.sh"]
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wan}
+      POSTGRES_DB: ${POSTGRES_DB:-wan_video}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wan} -d ${POSTGRES_DB:-wan_video}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    command: >
+      sh -c "uv run alembic upgrade head &&
+             uv run uvicorn api:app --host 0.0.0.0 --port 8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wan}:${POSTGRES_PASSWORD:-wan}@db:5432/${POSTGRES_DB:-wan_video}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-wan-video}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-}
+      HF_TOKEN: ${HF_TOKEN:-}
+      FAL_KEY: ${FAL_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    expose:
+      - "8000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    depends_on:
+      - api
+
+volumes:
+  minio_data:
+  pg_data:
