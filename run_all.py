@@ -19,16 +19,7 @@ from paths import OUTPUT_DIR, PROJECT_ROOT
 
 LOG_PATH = OUTPUT_DIR / "run-all.log"
 
-SCRIPTS: tuple[str, ...] = (
-    "fal-ai-inference.py",
-    "nano-banana.py",
-    "ideogram-character.py",
-    "kling-create-voice.py",
-    "trellis2-3d.py",
-    "hunyuan-3d.py",
-    "seeddance-video.py",
-    "wan-inference.py",
-)
+from scripts_config import GENERATION_SCRIPTS as SCRIPTS
 
 
 @dataclass(frozen=True)
@@ -88,20 +79,28 @@ def run_script(script: str, *, log_file) -> ScriptResult:
     started = time.perf_counter()
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
-    result = subprocess.run(
+    proc = subprocess.Popen(
         ["uv", "run", "python", script, "--demo"],
         cwd=PROJECT_ROOT,
-        check=False,
         env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        _log(line.rstrip("\n"), log_file=log_file)
+    returncode = proc.wait()
     elapsed = time.perf_counter() - started
-    artifacts = latest_artifacts(script) if result.returncode == 0 else ()
-    status = "OK" if result.returncode == 0 else f"FAIL ({result.returncode})"
+    artifacts = latest_artifacts(script) if returncode == 0 else ()
+    status = "OK" if returncode == 0 else f"FAIL ({returncode})"
     _log(f"[{_timestamp()}] {script}: {status} in {elapsed:.1f}s", log_file=log_file)
     if artifacts:
         for path in artifacts:
             _log(f"  -> {path}", log_file=log_file)
-    return ScriptResult(script, result.returncode, elapsed, artifacts)
+    return ScriptResult(script, returncode, elapsed, artifacts)
 
 
 def _timestamp() -> str:
@@ -133,6 +132,11 @@ def build_parser() -> argparse.ArgumentParser:
         dest="only_script",
         metavar="SCRIPT",
         help="Run a single script only",
+    )
+    parser.add_argument(
+        "--continue-on-error",
+        action="store_true",
+        help="Keep running remaining scripts after a failure",
     )
     return parser
 
@@ -175,6 +179,9 @@ def main() -> int:
             results.append(outcome)
             if outcome.exit_code != 0:
                 failures.append(f"{script} (exit {outcome.exit_code})")
+                if not args.continue_on_error:
+                    _log(f"\nStopping early (use --continue-on-error to run all).", log_file=log_file)
+                    break
 
         _print_summary(results, log_file=log_file)
 

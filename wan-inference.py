@@ -6,7 +6,9 @@ import argparse
 import os
 
 from huggingface_hub import InferenceClient
+from huggingface_hub.errors import HfHubHTTPError
 
+from api_errors import exit_on_api_error, run_cli
 from db.record import GenerationRecorder
 from env_utils import load_env_file, require_env
 from output_utils import make_run_stem, output_path, resolve_output_path, save_video_result
@@ -60,7 +62,10 @@ def main() -> None:
         provider=args.provider,
     ) as recorder:
         client = InferenceClient(provider=args.provider, api_key=os.environ["HF_TOKEN"])
-        video = client.text_to_video(video_prompt.prompt, model=MODEL_ID)
+        try:
+            video = client.text_to_video(video_prompt.prompt, model=MODEL_ID)
+        except HfHubHTTPError as exc:
+            exit_on_api_error(exc)
 
         print("\nGeneration complete.")
         print(f"Result type: {type(video).__name__}")
@@ -76,4 +81,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_cli(main)

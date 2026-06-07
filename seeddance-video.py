@@ -2,6 +2,7 @@
 
 import argparse
 
+from api_errors import run_cli
 from generation_runner import run_fal_generation
 from wan_prompt import collect_seedance_prompt, demo_seedance_prompt
 
@@ -34,4 +35,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_cli(main)

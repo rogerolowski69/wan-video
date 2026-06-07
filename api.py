@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
+import json
 import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from db.models import GenerationRun
 from db.session import get_session
 from env_utils import load_env_file
-from run_all import SCRIPTS
+from scripts_config import GENERATION_SCRIPTS as SCRIPTS
 
 load_env_file()
 
@@ -34,11 +35,20 @@ def root() -> dict[str, object]:
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
+def health() -> Response:
     missing = [name for name in ("HF_TOKEN", "FAL_KEY") if not os.environ.get(name)]
     if missing:
-        return {"status": "degraded", "missing_env": ",".join(missing)}
-    return {"status": "ok"}
+        body = {"status": "degraded", "missing_env": ",".join(missing)}
+        return Response(
+            content=json.dumps(body),
+            media_type="application/json",
+            status_code=503,
+        )
+    return Response(
+        content=json.dumps({"status": "ok"}),
+        media_type="application/json",
+        status_code=200,
+    )
 
 
 @app.get("/scripts")

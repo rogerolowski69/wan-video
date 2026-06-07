@@ -15,16 +15,7 @@ from db.session import get_session
 from env_utils import load_env_file
 from paths import OUTPUT_DIR
 
-SCRIPT_NAMES: tuple[str, ...] = (
-    "fal-ai-inference.py",
-    "nano-banana.py",
-    "ideogram-character.py",
-    "kling-create-voice.py",
-    "trellis2-3d.py",
-    "hunyuan-3d.py",
-    "seeddance-video.py",
-    "wan-inference.py",
-)
+from scripts_config import GENERATION_SCRIPTS as SCRIPT_NAMES
 
 
 def list_runs(*, limit: int = 20, status: str | None = None) -> int:

@@ -120,7 +120,11 @@ run-all: migrate
 
 # Resume run-all from a specific script (skips earlier ones)
 run-all-from script:
-    {{python}} run_all.py --from {{script}}
+    {{python}} run_all.py --from {{script}} --continue-on-error
+
+# Run all scripts; continue past individual failures
+run-all-continue: migrate
+    {{python}} run_all.py --continue-on-error
 
 # Setup: sync deps + migrate
 setup: sync migrate

@@ -2,6 +2,7 @@
 
 import argparse
 
+from api_errors import run_cli
 from generation_runner import run_fal_generation
 from wan_prompt import collect_hunyuan3d_input, demo_hunyuan3d_input
 
@@ -35,4 +36,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run_cli(main)

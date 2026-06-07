@@ -28,7 +28,10 @@ def output_path(stem: str, suffix: str = "") -> Path:
 
 
 def resolve_output_path(path: Path | str) -> Path:
-    """Resolve user-supplied output paths under project root when relative."""
+    """Resolve user-supplied output paths; bare filenames go under output/."""
+    candidate = Path(path)
+    if not candidate.is_absolute() and candidate.parent == Path("."):
+        return OUTPUT_DIR / candidate.name
     return project_relative(path)
 
 
