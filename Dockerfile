@@ -12,7 +12,10 @@ ENV PYTHONPATH=/app \
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-COPY alembic.ini alembic/ db/ scripts/ ./
+COPY alembic.ini ./
+COPY alembic/ alembic/
+COPY db/ db/
+COPY scripts/ scripts/
 COPY *.py ./
 
 RUN mkdir -p output data
