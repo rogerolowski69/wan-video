@@ -4,7 +4,7 @@ API-backed inference scripts for image, video, 3D, and voice generation via [fal
 
 **Live API:** https://wan-video-production.up.railway.app · [OpenAPI docs](https://wan-video-production.up.railway.app/docs)
 
-**Live UI:** https://wan-video-ui-production.up.railway.app *(after frontend deploy)*
+**Live UI:** https://frontend-production-e171.up.railway.app
 
 ## Local setup
 
@@ -99,7 +99,7 @@ Open http://localhost:5173 — Vite proxies `/api` to the backend.
 | Service | URL |
 |---------|-----|
 | **API** | https://wan-video-production.up.railway.app |
-| **Web UI** | https://wan-video-ui-production.up.railway.app |
+| **Web UI** | https://frontend-production-e171.up.railway.app |
 
 The repo deploys as two Railway services from the same GitHub repo:
 
