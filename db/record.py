@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
@@ -38,6 +39,16 @@ def relative_project_path(path: Path) -> str:
         return resolved.as_posix()
 
 
+def _user_id_from_env() -> int | None:
+    raw = os.environ.get("WAN_VIDEO_USER_ID", "").strip()
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
 class GenerationRecorder:
     """Context manager that tracks a single generation run."""
 
@@ -49,12 +60,14 @@ class GenerationRecorder:
         backend: str,
         prompt: str | None = None,
         provider: str | None = None,
+        user_id: int | None = None,
     ) -> None:
         self.script_name = script_name
         self.model_id = model_id
         self.backend = backend
         self.prompt = prompt
         self.provider = provider
+        self.user_id = user_id if user_id is not None else _user_id_from_env()
         self.run_id: int | None = None
         self._session = get_session()
 
@@ -66,6 +79,7 @@ class GenerationRecorder:
             provider=self.provider,
             prompt=self.prompt,
             status="running",
+            user_id=self.user_id,
         )
         self._session.add(run)
         self._session.commit()
@@ -120,6 +134,7 @@ def generation_recorder(
     backend: str,
     prompt: str | None = None,
     provider: str | None = None,
+    user_id: int | None = None,
 ) -> Iterator[GenerationRecorder]:
     with GenerationRecorder(
         script_name=script_name,
@@ -127,5 +142,6 @@ def generation_recorder(
         backend=backend,
         prompt=prompt,
         provider=provider,
+        user_id=user_id,
     ) as recorder:
         yield recorder

@@ -41,10 +41,12 @@ def _build_command(model: GenerationModel, *, demo: bool, provider: str | None) 
     return cmd
 
 
-def _run_subprocess(job_id: str, cmd: list[str]) -> None:
+def _run_subprocess(job_id: str, cmd: list[str], *, user_id: int | None = None) -> None:
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
     env["PYTHONPATH"] = str(PROJECT_ROOT)
+    if user_id is not None:
+        env["WAN_VIDEO_USER_ID"] = str(user_id)
     try:
         result = subprocess.run(
             cmd,
@@ -70,6 +72,7 @@ def start_model_job(
     *,
     demo: bool = True,
     provider: str | None = None,
+    user_id: int | None = None,
 ) -> JobRecord:
     model = get_model(model_id)
     if model is None:
@@ -89,12 +92,17 @@ def start_model_job(
     with _lock:
         _jobs[job_id] = record
 
-    thread = threading.Thread(target=_run_subprocess, args=(job_id, cmd), daemon=True)
+    thread = threading.Thread(
+        target=_run_subprocess,
+        args=(job_id, cmd),
+        kwargs={"user_id": user_id},
+        daemon=True,
+    )
     thread.start()
     return record
 
 
-def start_run_all(*, continue_on_error: bool = True) -> JobRecord:
+def start_run_all(*, continue_on_error: bool = True, user_id: int | None = None) -> JobRecord:
     job_id = uuid.uuid4().hex[:12]
     record = JobRecord(
         job_id=job_id,
@@ -111,7 +119,12 @@ def start_run_all(*, continue_on_error: bool = True) -> JobRecord:
     with _lock:
         _jobs[job_id] = record
 
-    thread = threading.Thread(target=_run_subprocess, args=(job_id, cmd), daemon=True)
+    thread = threading.Thread(
+        target=_run_subprocess,
+        args=(job_id, cmd),
+        kwargs={"user_id": user_id},
+        daemon=True,
+    )
     thread.start()
     return record
 

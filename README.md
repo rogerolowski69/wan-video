@@ -34,6 +34,28 @@ just menu
 
 Pick a model by number, choose demo or interactive prompts, or run the full batch.
 
+### Auth (Telegram + TON)
+
+The Studio requires login before generating (when `AUTH_REQUIRED=1`):
+
+- **Telegram** — auto-login inside a Mini App via signed `initData`
+- **TON Connect** — “Connect wallet” button in the header (works in browser too)
+
+```powershell
+# .env
+TELEGRAM_BOT_TOKEN=123456:ABC...   # from @BotFather
+JWT_SECRET=your-random-secret
+AUTH_REQUIRED=1                      # set 0 for local dev without login
+```
+
+**Telegram Mini App setup:**
+
+1. Message [@BotFather](https://t.me/BotFather) → `/newbot` → copy token to `TELEGRAM_BOT_TOKEN`
+2. BotFather → `/newapp` → pick your bot → set Web App URL to your frontend (e.g. `https://frontend-production-e171.up.railway.app`)
+3. Open the bot → Menu button launches the Studio with one-tap Telegram login
+
+**Local dev without Telegram:** set `AUTH_REQUIRED=0` in `.env`, or use the TON Connect button on http://localhost:5173
+
 ### Scripts
 
 ```

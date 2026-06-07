@@ -14,6 +14,7 @@ RUN uv sync --frozen --no-dev
 
 COPY alembic.ini ./
 COPY alembic/ alembic/
+COPY auth/ auth/
 COPY db/ db/
 COPY scripts/ scripts/
 COPY *.py ./

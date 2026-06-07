@@ -13,6 +13,7 @@ import {
   type Run,
 } from "../api";
 import { ActiveJobBanner, ModelLaunchCard } from "../components/ModelLaunchCard";
+import { LoginGate } from "../components/AuthBar";
 import { RunCard } from "../components/RunCard";
 import { StatusBadge } from "../components/StatusBadge";
 
@@ -91,6 +92,7 @@ export function StudioPage(): React.JSX.Element {
       : (catalog?.models.find((m) => m.id === activeJob?.model_id)?.label ?? activeJob?.model_id);
 
   return (
+    <LoginGate>
     <div className="space-y-10">
       <section className="text-center space-y-4 py-4">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-200 via-white to-violet-200 bg-clip-text text-transparent">
@@ -177,6 +179,7 @@ export function StudioPage(): React.JSX.Element {
         <code className="text-zinc-400">just flux</code> in your terminal.
       </p>
     </div>
+    </LoginGate>
   );
 }
 

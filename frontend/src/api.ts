@@ -67,10 +67,20 @@ export type Job = {
   error: string | null;
 };
 
+import type { AuthConfig, AuthResponse, AuthUser, MeResponse } from "./auth";
+import { authHeaders, setAuthToken } from "./auth";
+
 const API_BASE = import.meta.env.VITE_API_URL ?? "/api";
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, init);
+  const headers = new Headers(init?.headers);
+  if (!headers.has("Content-Type") && init?.body) {
+    headers.set("Content-Type", "application/json");
+  }
+  for (const [key, value] of Object.entries(authHeaders())) {
+    headers.set(key, value);
+  }
+  const response = await fetch(`${API_BASE}${path}`, { ...init, headers });
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || `${response.status} ${response.statusText}`);
@@ -138,3 +148,31 @@ export function scriptLabel(script: string, labels?: Record<string, string>): st
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleString();
 }
+
+export function getAuthConfig(): Promise<AuthConfig> {
+  return fetchJson<AuthConfig>("/auth/config");
+}
+
+export function getMe(): Promise<MeResponse> {
+  return fetchJson<MeResponse>("/auth/me");
+}
+
+export function loginTelegram(initData: string): Promise<AuthResponse> {
+  return fetchJson<AuthResponse>("/auth/telegram", {
+    method: "POST",
+    body: JSON.stringify({ init_data: initData }),
+  });
+}
+
+export function loginTon(walletAddress: string): Promise<AuthResponse> {
+  return fetchJson<AuthResponse>("/auth/ton", {
+    method: "POST",
+    body: JSON.stringify({ wallet_address: walletAddress }),
+  });
+}
+
+export function logout(): void {
+  setAuthToken(null);
+}
+
+export type { AuthUser };

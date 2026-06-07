@@ -7,13 +7,15 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from db.models import GenerationRun, OutputArtifact
+from auth.deps import auth_required, get_optional_user, require_user, user_for_generation
+from auth.routes import router as auth_router
+from db.models import GenerationRun, OutputArtifact, User
 from db.session import get_session
 from env_utils import load_env_file
 from job_runner import get_job, job_to_dict, list_jobs, start_model_job, start_run_all
@@ -31,10 +33,12 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="wan-video",
-    version="0.3.0",
+    version="0.4.0",
     description="fal.ai + Hugging Face inference — image, video, 3D, and voice generation",
     lifespan=lifespan,
 )
+
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -111,19 +115,31 @@ def list_scripts() -> dict[str, object]:
 
 
 @app.post("/generate/{model_id}")
-def generate_model(model_id: str, body: GenerateRequest) -> dict[str, object]:
+def generate_model(
+    model_id: str,
+    body: GenerateRequest,
+    user: User | None = Depends(user_for_generation),
+) -> dict[str, object]:
     if get_model(model_id) is None:
         raise HTTPException(status_code=404, detail=f"Unknown model: {model_id}")
     try:
-        job = start_model_job(model_id, demo=body.demo, provider=body.provider)
+        job = start_model_job(
+            model_id,
+            demo=body.demo,
+            provider=body.provider,
+            user_id=user.id if user else None,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return job_to_dict(job)
 
 
 @app.post("/generate/run-all")
-def generate_run_all(body: RunAllRequest) -> dict[str, object]:
-    job = start_run_all(continue_on_error=body.continue_on_error)
+def generate_run_all(
+    body: RunAllRequest,
+    user: User | None = Depends(user_for_generation),
+) -> dict[str, object]:
+    job = start_run_all(continue_on_error=body.continue_on_error, user_id=user.id if user else None)
     return job_to_dict(job)
 
 
@@ -141,7 +157,14 @@ def job_status(job_id: str) -> dict[str, object]:
 
 
 @app.get("/runs")
-def list_runs(limit: int = 50, status: str | None = None) -> list[dict[str, Any]]:
+def list_runs(
+    limit: int = 50,
+    status: str | None = None,
+    user: User | None = Depends(get_optional_user),
+) -> list[dict[str, Any]]:
+    if auth_required() and user is None:
+        raise HTTPException(status_code=401, detail="Login required")
+
     capped = min(max(limit, 1), 200)
     session = get_session()
     try:
@@ -151,6 +174,8 @@ def list_runs(limit: int = 50, status: str | None = None) -> list[dict[str, Any]
             .order_by(GenerationRun.started_at.desc())
             .limit(capped)
         )
+        if user is not None:
+            stmt = stmt.where(GenerationRun.user_id == user.id)
         if status:
             stmt = stmt.where(GenerationRun.status == status)
         runs = session.scalars(stmt).all()
@@ -160,7 +185,13 @@ def list_runs(limit: int = 50, status: str | None = None) -> list[dict[str, Any]
 
 
 @app.get("/runs/{run_id}")
-def get_run(run_id: int) -> dict[str, Any]:
+def get_run(
+    run_id: int,
+    user: User | None = Depends(get_optional_user),
+) -> dict[str, Any]:
+    if auth_required() and user is None:
+        raise HTTPException(status_code=401, detail="Login required")
+
     session = get_session()
     try:
         run = session.scalars(
@@ -170,22 +201,34 @@ def get_run(run_id: int) -> dict[str, Any]:
         ).first()
         if run is None:
             raise HTTPException(status_code=404, detail="Run not found")
+        if user is not None and run.user_id is not None and run.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Run not found")
         return _run_payload(run)
     finally:
         session.close()
 
 
 @app.get("/gallery")
-def gallery(limit: int = 100) -> list[dict[str, Any]]:
+def gallery(
+    limit: int = 100,
+    user: User | None = Depends(get_optional_user),
+) -> list[dict[str, Any]]:
+    if auth_required() and user is None:
+        raise HTTPException(status_code=401, detail="Login required")
+
     capped = min(max(limit, 1), 500)
     session = get_session()
     try:
-        rows = session.scalars(
+        stmt = (
             select(OutputArtifact)
+            .join(GenerationRun, OutputArtifact.run_id == GenerationRun.id)
             .where(OutputArtifact.file_kind.in_(("image", "video", "model_3d", "audio")))
             .order_by(OutputArtifact.created_at.desc())
             .limit(capped)
-        ).all()
+        )
+        if user is not None:
+            stmt = stmt.where(GenerationRun.user_id == user.id)
+        rows = session.scalars(stmt).all()
         return [
             {
                 "id": row.id,

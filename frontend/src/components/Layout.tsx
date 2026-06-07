@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { AuthBar } from "./AuthBar";
 
 const NAV = [
   { to: "/", label: "Studio" },
@@ -19,7 +20,7 @@ export function Layout(): React.JSX.Element {
             </span>
             wan-video
           </Link>
-          <nav className="flex gap-1">
+          <nav className="flex gap-1 items-center">
             {NAV.map((item) => {
               const active =
                 item.to === "/"
@@ -39,6 +40,9 @@ export function Layout(): React.JSX.Element {
                 </Link>
               );
             })}
+            <div className="ml-2 pl-2 border-l border-white/10">
+              <AuthBar />
+            </div>
           </nav>
         </div>
       </header>

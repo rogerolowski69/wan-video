@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tonconnect/sdk": "^3.4.1",
+    "@tonconnect/ui-react": "^2.4.4",
+    "@twa-dev/sdk": "^8.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0"
