@@ -9,4 +9,5 @@ output/
 data/
 frontend/node_modules/
 frontend/dist/
+frontend/tsconfig.tsbuildinfo
 test_output_*.mp4
