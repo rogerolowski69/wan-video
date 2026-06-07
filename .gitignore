@@ -1,0 +1,10 @@
+.venv/
+.venv-old/
+.venv-old-delete-me/
+.venv-uv/
+.env
+__pycache__/
+*.py[cod]
+output/
+data/
+test_output_*.mp4

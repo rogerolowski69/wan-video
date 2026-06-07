@@ -1,0 +1,11 @@
+# Legacy pip install path — prefer: uv sync
+# Dependencies are defined in pyproject.toml
+
+huggingface_hub>=0.36.0
+fal-client
+requests
+sqlalchemy>=2.0
+alembic>=1.14
+fastapi>=0.115
+uvicorn[standard]>=0.32
+psycopg[binary]>=3.2
