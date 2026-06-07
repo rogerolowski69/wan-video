@@ -67,6 +67,8 @@ services:
 
   frontend:
     build: ./frontend
+    environment:
+      API_PROXY_URL: http://api:8000
     ports:
       - "${WEB_PORT:-3000}:80"
     depends_on:

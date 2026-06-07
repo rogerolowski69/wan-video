@@ -4,6 +4,8 @@ API-backed inference scripts for image, video, 3D, and voice generation via [fal
 
 **Live API:** https://wan-video-production.up.railway.app · [OpenAPI docs](https://wan-video-production.up.railway.app/docs)
 
+**Live UI:** https://wan-video-ui-production.up.railway.app *(after frontend deploy)*
+
 ## Local setup
 
 ```powershell
@@ -94,7 +96,19 @@ Open http://localhost:5173 — Vite proxies `/api` to the backend.
 
 ## Deploy on Railway
 
-**Production:** https://wan-video-production.up.railway.app
+| Service | URL |
+|---------|-----|
+| **API** | https://wan-video-production.up.railway.app |
+| **Web UI** | https://wan-video-ui-production.up.railway.app |
+
+The repo deploys as two Railway services from the same GitHub repo:
+
+| Service | Root directory | Dockerfile |
+|---------|----------------|------------|
+| `wan-video` | `/` (repo root) | `Dockerfile` |
+| `frontend` | `/frontend` | `frontend/Dockerfile` |
+
+**API service** (`wan-video`):
 
 1. Push this repo to GitHub and connect it in [Railway](https://railway.app).
 2. Set environment variables:
@@ -103,7 +117,13 @@ Open http://localhost:5173 — Vite proxies `/api` to the backend.
    - `DATABASE_URL` *(optional)* — Postgres URL for persistent run history; defaults to SQLite on the container filesystem
 3. Railway builds from `Dockerfile` and starts the FastAPI app on `$PORT`.
 
-Endpoints:
+**Frontend service** (`frontend`):
+
+1. Add a second service in the same Railway project with **Root Directory** = `frontend`.
+2. Set `API_PROXY_URL` to the public API URL, e.g. `https://wan-video-production.up.railway.app`.
+3. Railway builds from `frontend/Dockerfile` (nginx + React). The UI proxies `/api/*` to the API.
+
+API endpoints:
 
 - `GET /` — service info
 - `GET /health` — API key check (`ok` or `degraded`)
