@@ -1,5 +1,17 @@
 """Generate an image with FLUX dev on fal.ai using an interactive prompt."""
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 
 from api_errors import run_cli
@@ -8,7 +20,7 @@ from wan_prompt import collect_fal_image_prompt, demo_image_prompt
 
 MODEL_ID = "fal-ai/flux/dev"
 OUTPUT_STEM = "flux-dev"
-SCRIPT_NAME = "fal-ai-inference.py"
+SCRIPT_NAME = "scripts/image/flux.py"
 
 
 def main() -> None:

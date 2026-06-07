@@ -16,16 +16,26 @@ Copy `.env.example` to `.env` and set `HF_TOKEN` and `FAL_KEY`.
 
 ## Scripts
 
-| Script | Model |
-|--------|-------|
-| `fal-ai-inference.py` | FLUX dev |
-| `nano-banana.py` | Nano Banana 2 |
-| `ideogram-character.py` | Ideogram Character |
-| `kling-create-voice.py` | Kling voice |
-| `trellis2-3d.py` | Trellis 2 (image→3D) |
-| `hunyuan-3d.py` | Hunyuan3D |
-| `seeddance-video.py` | Seedance video |
-| `wan-inference.py` | Wan 2.2 T2V (HF Inference) |
+Generation CLIs live under `scripts/` by modality:
+
+```
+scripts/
+  image/          flux, nano_banana, ideogram_character
+  video/          seedance, wan
+  voice/          kling
+  model_3d/       trellis2, hunyuan
+```
+
+| Just recipe | Script | Model |
+|-------------|--------|-------|
+| `just flux` | `scripts/image/flux.py` | FLUX dev |
+| `just nano` | `scripts/image/nano_banana.py` | Nano Banana 2 |
+| `just ideogram` | `scripts/image/ideogram_character.py` | Ideogram Character |
+| `just kling` | `scripts/voice/kling.py` | Kling voice |
+| `just trellis` | `scripts/model_3d/trellis2.py` | Trellis 2 (image→3D) |
+| `just hunyuan` | `scripts/model_3d/hunyuan.py` | Hunyuan3D |
+| `just seedance` | `scripts/video/seedance.py` | Seedance video |
+| `just wan` | `scripts/video/wan.py` | Wan 2.2 T2V (HF Inference) |
 
 Outputs land in `output/` with unique `-run<ID>` suffixes. Run history is stored in `data/wan_video.db`.
 
@@ -48,5 +58,6 @@ Endpoints:
 Run generations locally or via Railway shell:
 
 ```bash
-uv run python fal-ai-inference.py --demo
+just flux --demo
+# or: uv run python scripts/image/flux.py --demo
 ```

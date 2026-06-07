@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 from db.models import GenerationRun
 from db.session import get_session
 from env_utils import load_env_file
-from scripts_config import GENERATION_SCRIPTS as SCRIPTS
+from scripts_config import GENERATION_SCRIPTS as SCRIPTS, SCRIPTS_BY_MODALITY
 
 load_env_file()
 
@@ -52,8 +52,8 @@ def health() -> Response:
 
 
 @app.get("/scripts")
-def list_scripts() -> dict[str, list[str]]:
-    return {"scripts": list(SCRIPTS)}
+def list_scripts() -> dict[str, object]:
+    return {"scripts": list(SCRIPTS), "by_modality": {k: list(v) for k, v in SCRIPTS_BY_MODALITY.items()}}
 
 
 @app.get("/runs")

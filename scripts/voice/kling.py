@@ -1,5 +1,17 @@
 """Create a Kling voice clone from an audio sample URL on fal.ai."""
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 
 from api_errors import run_cli
@@ -8,7 +20,7 @@ from wan_prompt import collect_kling_voice_input, demo_kling_voice_input
 
 MODEL_ID = "fal-ai/kling-video/create-voice"
 OUTPUT_STEM = "kling-voice"
-SCRIPT_NAME = "kling-create-voice.py"
+SCRIPT_NAME = "scripts/voice/kling.py"
 
 
 def main() -> None:

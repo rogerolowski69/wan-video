@@ -2,6 +2,18 @@
 
 from __future__ import annotations
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 import os
 
@@ -15,7 +27,7 @@ from output_utils import make_run_stem, output_path, resolve_output_path, save_v
 from wan_prompt import collect_video_prompt, demo_video_prompt
 
 MODEL_ID = "Wan-AI/Wan2.2-T2V-A14B-Diffusers"
-SCRIPT_NAME = "wan-inference.py"
+SCRIPT_NAME = "scripts/video/wan.py"
 DEFAULT_PROVIDER = "fal-ai"
 OUTPUT_BASENAME = "wan-inference"
 

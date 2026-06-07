@@ -1,5 +1,17 @@
 """Generate video with Seedance 2.0 on fal.ai using an interactive prompt."""
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 
 from api_errors import run_cli
@@ -8,7 +20,7 @@ from wan_prompt import collect_seedance_prompt, demo_seedance_prompt
 
 MODEL_ID = "bytedance/seedance-2.0/text-to-video"
 OUTPUT_STEM = "seedance"
-SCRIPT_NAME = "seeddance-video.py"
+SCRIPT_NAME = "scripts/video/seedance.py"
 
 
 def main() -> None:

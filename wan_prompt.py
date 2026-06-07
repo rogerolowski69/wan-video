@@ -486,7 +486,7 @@ WHAT MAKES A GOOD SOURCE IMAGE
 
 WORKFLOW
   • Describe your object below — we build a 2D image prompt you can generate with
-    fal-ai-inference.py or nano-banana.py, then paste the resulting image URL here.
+    scripts/image/flux.py or scripts/image/nano_banana.py, then paste the resulting image URL here.
   • Or press Enter at Object for a random demo image prompt + demo URL.
 
 Press Enter at Object for a random curated demo.
@@ -514,8 +514,8 @@ WHAT MAKES A GOOD SOURCE IMAGE
   6. No text/logos     — typography does not reconstruct well in 3D
 
 WORKFLOW
-  • Describe your object — we build a 2D image prompt for fal-ai-inference.py or
-    nano-banana.py, then paste the resulting image URL here.
+  • Describe your object — we build a 2D image prompt for scripts/image/flux.py or
+    scripts/image/nano_banana.py, then paste the resulting image URL here.
   • Or press Enter at Object for a random demo image prompt + demo URL.
 
 Note: Hunyuan also offers text-to-3d on fal; this script uses the image-to-3d path.
@@ -782,7 +782,7 @@ def build_image_to_3d_input(
 
     print("\n--- Suggested 2D image prompt ---")
     print(f"  {image_prompt}")
-    print("\n  Generate this with fal-ai-inference.py or nano-banana.py, then paste the URL.\n")
+    print("\n  Generate this with just flux or just nano, then paste the URL.\n")
 
     image_url = _ask("Image URL", "https://... or Enter to use demo URL")
     if not image_url:

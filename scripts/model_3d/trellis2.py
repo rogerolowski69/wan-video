@@ -1,5 +1,17 @@
 """Convert a 2D image to 3D with Trellis 2 on fal.ai."""
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 
 from api_errors import run_cli
@@ -8,7 +20,7 @@ from wan_prompt import collect_trellis2_input, demo_trellis2_input
 
 MODEL_ID = "fal-ai/trellis-2"
 OUTPUT_STEM = "trellis2"
-SCRIPT_NAME = "trellis2-3d.py"
+SCRIPT_NAME = "scripts/model_3d/trellis2.py"
 
 
 def main() -> None:

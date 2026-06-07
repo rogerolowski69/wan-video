@@ -19,7 +19,7 @@ from paths import OUTPUT_DIR, PROJECT_ROOT
 
 LOG_PATH = OUTPUT_DIR / "run-all.log"
 
-from scripts_config import GENERATION_SCRIPTS as SCRIPTS
+from scripts_config import GENERATION_SCRIPTS as SCRIPTS, resolve_script_name, script_name_variants
 
 
 @dataclass(frozen=True)
@@ -61,10 +61,11 @@ def fix_stale_running() -> int:
 
 def latest_artifacts(script_name: str) -> tuple[str, ...]:
     session = get_session()
+    names = script_name_variants(script_name)
     run = session.scalars(
         select(GenerationRun)
         .options(selectinload(GenerationRun.artifacts))
-        .where(GenerationRun.script_name == script_name)
+        .where(GenerationRun.script_name.in_(names))
         .order_by(GenerationRun.started_at.desc())
         .limit(1)
     ).first()
@@ -79,6 +80,7 @@ def run_script(script: str, *, log_file) -> ScriptResult:
     started = time.perf_counter()
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
+    env["PYTHONPATH"] = str(PROJECT_ROOT)
     proc = subprocess.Popen(
         ["uv", "run", "python", script, "--demo"],
         cwd=PROJECT_ROOT,
@@ -143,14 +145,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 def select_scripts(args: argparse.Namespace) -> tuple[str, ...]:
     if args.only_script:
-        if args.only_script not in SCRIPTS:
+        resolved = resolve_script_name(args.only_script)
+        if resolved not in SCRIPTS:
             raise SystemExit(f"Unknown script: {args.only_script}. Choices: {', '.join(SCRIPTS)}")
-        return (args.only_script,)
+        return (resolved,)
 
     if args.from_script:
-        if args.from_script not in SCRIPTS:
+        resolved = resolve_script_name(args.from_script)
+        if resolved not in SCRIPTS:
             raise SystemExit(f"Unknown script: {args.from_script}. Choices: {', '.join(SCRIPTS)}")
-        index = SCRIPTS.index(args.from_script)
+        index = SCRIPTS.index(resolved)
         return SCRIPTS[index:]
 
     return SCRIPTS

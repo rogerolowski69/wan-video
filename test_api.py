@@ -71,7 +71,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         key_env="HF_TOKEN",
         provider="fal-ai",
         task="text-to-video",
-        source_file="wan-inference.py",
+        source_file="scripts/video/wan.py",
         test_prompt="A young man walking on a city street at dusk, cinematic tracking shot.",
     ),
     EndpointConfig(
@@ -81,7 +81,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="fal-ai/flux/dev",
         key_env="FAL_KEY",
         task="text-to-image",
-        source_file="fal-ai-inference.py",
+        source_file="scripts/image/flux.py",
     ),
     EndpointConfig(
         id="fal-nano-banana",
@@ -90,7 +90,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="fal-ai/nano-banana-2",
         key_env="FAL_KEY",
         task="text-to-image",
-        source_file="nano-banana.py",
+        source_file="scripts/image/nano_banana.py",
     ),
     EndpointConfig(
         id="fal-seedance",
@@ -99,7 +99,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="bytedance/seedance-2.0/text-to-video",
         key_env="FAL_KEY",
         task="text-to-video",
-        source_file="seeddance-video.py",
+        source_file="scripts/video/seedance.py",
     ),
     EndpointConfig(
         id="fal-ideogram-character",
@@ -108,7 +108,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="fal-ai/ideogram/character",
         key_env="FAL_KEY",
         task="text-to-image",
-        source_file="ideogram-character.py",
+        source_file="scripts/image/ideogram_character.py",
     ),
     EndpointConfig(
         id="fal-trellis2",
@@ -117,7 +117,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="fal-ai/trellis-2",
         key_env="FAL_KEY",
         task="image-to-3d",
-        source_file="trellis2-3d.py",
+        source_file="scripts/model_3d/trellis2.py",
     ),
     EndpointConfig(
         id="fal-hunyuan3d",
@@ -126,7 +126,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="fal-ai/hunyuan-3d/v3.1/rapid/image-to-3d",
         key_env="FAL_KEY",
         task="image-to-3d",
-        source_file="hunyuan-3d.py",
+        source_file="scripts/model_3d/hunyuan.py",
     ),
     EndpointConfig(
         id="fal-kling-voice",
@@ -135,7 +135,7 @@ ENDPOINTS: tuple[EndpointConfig, ...] = (
         model="fal-ai/kling-video/create-voice",
         key_env="FAL_KEY",
         task="voice-cloning",
-        source_file="kling-create-voice.py",
+        source_file="scripts/voice/kling.py",
     ),
 )
 

@@ -1,5 +1,17 @@
 """Generate an image with Nano Banana 2 on fal.ai using an interactive prompt."""
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 
 from api_errors import run_cli
@@ -8,7 +20,7 @@ from wan_prompt import NANO_BANANA_EXAMPLES, collect_nano_banana_prompt, demo_im
 
 MODEL_ID = "fal-ai/nano-banana-2"
 OUTPUT_STEM = "nano-banana"
-SCRIPT_NAME = "nano-banana.py"
+SCRIPT_NAME = "scripts/image/nano_banana.py"
 
 
 def main() -> None:

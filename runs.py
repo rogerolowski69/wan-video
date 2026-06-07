@@ -15,7 +15,7 @@ from db.session import get_session
 from env_utils import load_env_file
 from paths import OUTPUT_DIR
 
-from scripts_config import GENERATION_SCRIPTS as SCRIPT_NAMES
+from scripts_config import GENERATION_SCRIPTS as SCRIPT_NAMES, script_name_variants
 
 
 def list_runs(*, limit: int = 20, status: str | None = None) -> int:
@@ -56,25 +56,26 @@ def show_status() -> int:
     """Show latest completed run per script."""
     session = get_session()
     print(f"Database: {session.bind.url}\n")
-    print(f"{'Script':<28} {'Status':<10} {'Last run':<28} Artifacts")
-    print("-" * 90)
+    print(f"{'Script':<40} {'Status':<10} {'Last run':<28} Artifacts")
+    print("-" * 102)
 
     for script_name in SCRIPT_NAMES:
+        names = script_name_variants(script_name)
         run = session.scalars(
             select(GenerationRun)
             .options(selectinload(GenerationRun.artifacts))
-            .where(GenerationRun.script_name == script_name)
+            .where(GenerationRun.script_name.in_(names))
             .order_by(GenerationRun.started_at.desc())
             .limit(1)
         ).first()
 
         if run is None:
-            print(f"{script_name:<28} {'—':<10} {'never':<28} —")
+            print(f"{script_name:<40} {'—':<10} {'never':<28} —")
             continue
 
         artifact_count = len(run.artifacts)
         started = run.started_at.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"{script_name:<28} {run.status:<10} {started:<28} {artifact_count} file(s)")
+        print(f"{script_name:<40} {run.status:<10} {started:<28} {artifact_count} file(s)")
 
     session.close()
     return 0

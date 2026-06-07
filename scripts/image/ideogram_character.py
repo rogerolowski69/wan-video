@@ -1,5 +1,17 @@
 """Place a reference character into a new scene with Ideogram Character on fal.ai."""
 
+import importlib.util
+from pathlib import Path
+
+_bootstrap_spec = importlib.util.spec_from_file_location(
+    "scripts._bootstrap",
+    Path(__file__).resolve().parents[1] / "_bootstrap.py",
+)
+assert _bootstrap_spec and _bootstrap_spec.loader
+_bootstrap = importlib.util.module_from_spec(_bootstrap_spec)
+_bootstrap_spec.loader.exec_module(_bootstrap)
+_bootstrap.install()
+
 import argparse
 
 from api_errors import run_cli
@@ -8,7 +20,7 @@ from wan_prompt import collect_ideogram_character_prompt, demo_ideogram_characte
 
 MODEL_ID = "fal-ai/ideogram/character"
 OUTPUT_STEM = "ideogram-character"
-SCRIPT_NAME = "ideogram-character.py"
+SCRIPT_NAME = "scripts/image/ideogram_character.py"
 
 
 def main() -> None:

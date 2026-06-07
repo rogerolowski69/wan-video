@@ -65,54 +65,54 @@ runs-fix-stale:
 # --- Generation (interactive — prompts in terminal) ---
 
 flux *args:
-    {{python}} fal-ai-inference.py {{args}}
+    {{python}} scripts/image/flux.py {{args}}
 
 nano *args:
-    {{python}} nano-banana.py {{args}}
+    {{python}} scripts/image/nano_banana.py {{args}}
 
 ideogram *args:
-    {{python}} ideogram-character.py {{args}}
+    {{python}} scripts/image/ideogram_character.py {{args}}
 
 kling *args:
-    {{python}} kling-create-voice.py {{args}}
+    {{python}} scripts/voice/kling.py {{args}}
 
 trellis *args:
-    {{python}} trellis2-3d.py {{args}}
+    {{python}} scripts/model_3d/trellis2.py {{args}}
 
 hunyuan *args:
-    {{python}} hunyuan-3d.py {{args}}
+    {{python}} scripts/model_3d/hunyuan.py {{args}}
 
 seedance *args:
-    {{python}} seeddance-video.py {{args}}
+    {{python}} scripts/video/seedance.py {{args}}
 
 wan *args:
-    {{python}} wan-inference.py {{args}}
+    {{python}} scripts/video/wan.py {{args}}
 
 # --- Generation (non-interactive demo prompts) ---
 
 demo-flux:
-    {{python}} fal-ai-inference.py --demo
+    {{python}} scripts/image/flux.py --demo
 
 demo-nano:
-    {{python}} nano-banana.py --demo
+    {{python}} scripts/image/nano_banana.py --demo
 
 demo-ideogram:
-    {{python}} ideogram-character.py --demo
+    {{python}} scripts/image/ideogram_character.py --demo
 
 demo-kling:
-    {{python}} kling-create-voice.py --demo
+    {{python}} scripts/voice/kling.py --demo
 
 demo-trellis:
-    {{python}} trellis2-3d.py --demo
+    {{python}} scripts/model_3d/trellis2.py --demo
 
 demo-hunyuan:
-    {{python}} hunyuan-3d.py --demo
+    {{python}} scripts/model_3d/hunyuan.py --demo
 
 demo-seedance:
-    {{python}} seeddance-video.py --demo
+    {{python}} scripts/video/seedance.py --demo
 
 demo-wan provider="fal-ai":
-    {{python}} wan-inference.py --demo --provider {{provider}}
+    {{python}} scripts/video/wan.py --demo --provider {{provider}}
 
 # Migrate DB, then run all scripts with --demo (log: output/run-all.log)
 run-all: migrate
