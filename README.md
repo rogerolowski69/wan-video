@@ -2,6 +2,8 @@
 
 API-backed inference scripts for image, video, 3D, and voice generation via [fal.ai](https://fal.ai) and [Hugging Face Inference](https://huggingface.co/docs/inference-providers).
 
+**Live API:** https://wan-video-production.up.railway.app · [OpenAPI docs](https://wan-video-production.up.railway.app/docs)
+
 ## Local setup
 
 ```powershell
@@ -92,6 +94,8 @@ Open http://localhost:5173 — Vite proxies `/api` to the backend.
 
 ## Deploy on Railway
 
+**Production:** https://wan-video-production.up.railway.app
+
 1. Push this repo to GitHub and connect it in [Railway](https://railway.app).
 2. Set environment variables:
    - `HF_TOKEN` — Hugging Face token
@@ -101,9 +105,13 @@ Open http://localhost:5173 — Vite proxies `/api` to the backend.
 
 Endpoints:
 
-- `GET /health` — liveness check
+- `GET /` — service info
+- `GET /health` — API key check (`ok` or `degraded`)
+- `GET /catalog` — model catalog (Studio)
+- `POST /generate/{model_id}` — launch a model (demo mode)
+- `POST /generate/run-all` — run all scripts
 - `GET /runs` — recent generation runs
-- `GET /scripts` — available CLI scripts
+- `GET /gallery` — media artifacts
 - `GET /docs` — OpenAPI UI
 
 Run generations locally or via Railway shell:
